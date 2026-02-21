@@ -1,0 +1,15 @@
+export const COLORS = {
+  Background: '#1f1f1f',
+  SECONDARY_BACKGROUND: '#252525',
+  PRIMARY: '#2f6b87',
+  SECONDARY: '#d4d4ce',
+  SOFT_BORDER: '#374151',
+  TEXT_PRIMARY: '#f5f5f0',
+  TEXT_SECONDARY: '#9CA3AF',
+  Racha: '#FF6B35',
+  SECONDARY_cobre: '#87582f',
+  SECONDARY_verde: '#2f8758',
+  SECONDARY_purpura: '#582f87',
+  SECONDARY_azul_marino: '#1a4a5e',
+  SECONDARY_azul_cielo: '#4a9dba',
+};
