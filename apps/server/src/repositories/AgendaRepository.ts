@@ -1,10 +1,16 @@
-import { supabase } from "../db/supabase.js";
 import type { AgendaSemanal } from "../domain/types.js";
 import type { IAgendaRepository } from "../domain/repositories.js";
+import { SupabaseClient } from "@supabase/supabase-js";
 
 export class AgendaRepository implements IAgendaRepository {
+  private readonly supabase;
+
+  constructor(supabaseClient: SupabaseClient) {
+    this.supabase = supabaseClient;
+  }
+
   async obtenerPorUsuario(userId: string): Promise<AgendaSemanal[]> {
-    const { data, error } = await supabase
+    const { data, error } = await this.supabase
       .from("agenda_semanal")
       .select(
         `
@@ -26,7 +32,7 @@ export class AgendaRepository implements IAgendaRepository {
     userId: string,
     diaSemana: number,
   ): Promise<AgendaSemanal | null> {
-    const { data, error } = await supabase
+    const { data, error } = await this.supabase
       .from("agenda_semanal")
       .select("*")
       .eq("usuario_id", userId)
@@ -41,7 +47,7 @@ export class AgendaRepository implements IAgendaRepository {
     dia_semana: number;
     rutina_id: number;
   }): Promise<AgendaSemanal> {
-    const { data: created, error } = await supabase
+    const { data: created, error } = await this.supabase
       .from("agenda_semanal")
       .insert(data)
       .select()
@@ -52,7 +58,7 @@ export class AgendaRepository implements IAgendaRepository {
   }
 
   async actualizar(id: number, rutinaId: number): Promise<AgendaSemanal> {
-    const { data, error } = await supabase
+    const { data, error } = await this.supabase
       .from("agenda_semanal")
       .update({ rutina_id: rutinaId, updated_at: new Date().toISOString() })
       .eq("id", id)
@@ -64,7 +70,7 @@ export class AgendaRepository implements IAgendaRepository {
   }
 
   async eliminar(id: number): Promise<void> {
-    const { error } = await supabase
+    const { error } = await this.supabase
       .from("agenda_semanal")
       .delete()
       .eq("id", id);
@@ -72,7 +78,7 @@ export class AgendaRepository implements IAgendaRepository {
   }
 
   async eliminarPorRutina(rutinaId: number): Promise<void> {
-    const { error } = await supabase
+    const { error } = await this.supabase
       .from("agenda_semanal")
       .delete()
       .eq("rutina_id", rutinaId);

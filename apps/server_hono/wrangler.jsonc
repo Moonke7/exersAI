@@ -1,0 +1,17 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "server_hono",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-02-28",
+  "compatibility_flags": ["nodejs_compat"],
+  "vars": {
+    "JWT_SECRET": "dev-secret-change-in-production"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "exersai-db",
+      "database_id": ""
+    }
+  ]
+}

@@ -4,29 +4,63 @@ import { EquipamientoRepository } from "../repositories/EquipamientoRepository.j
 import { RutinaRepository } from "../repositories/RutinaRepository.js";
 import { ObtenerEjerciciosUseCase } from "../use-cases/ejercicios/ObtenerEjerciciosUseCase.js";
 import { CrearRutinaUseCase } from "../use-cases/rutinas/CrearRutinaUseCase.js";
-import { generateRoutine } from "../services/deepseek.js";
+import { generateDeepSeekRoutine } from "@exersai/shared/services/LLM-models/deepseek.js";
+import { createSupabaseClient } from "@exersai/shared/db/supabase";
 
-// Instancias de repositorios (singletons simples)
-const ejercicioRepo = new EjercicioRepository();
-const equipamientoRepo = new EquipamientoRepository();
-const rutinaRepo = new RutinaRepository();
+// Helper to lazy-load the dependencies
+let _ejercicioRepo: EjercicioRepository | null = null;
+let _equipamientoRepo: EquipamientoRepository | null = null;
+let _rutinaRepo: RutinaRepository | null = null;
+let _obtenerEjerciciosUseCase: ObtenerEjerciciosUseCase | null = null;
+let _crearRutinaUseCase: CrearRutinaUseCase | null = null;
 
-const obtenerEjerciciosUseCase = new ObtenerEjerciciosUseCase(ejercicioRepo);
+function getDependencies() {
+  if (_crearRutinaUseCase) {
+    return {
+      obtenerEjerciciosUseCase: _obtenerEjerciciosUseCase!,
+      crearRutinaUseCase: _crearRutinaUseCase!,
+      equipamientoRepo: _equipamientoRepo!,
+    };
+  }
 
-// Adaptador para que el AI service cumpla la interfaz esperada por el use case
-const aiService = {
-  generateRoutine: (
-    candidatos: Record<string, any[]>,
-    level: string,
-    goal: string,
-  ) => generateRoutine(candidatos, level, goal),
-};
-const crearRutinaUseCase = new CrearRutinaUseCase(
-  rutinaRepo,
-  ejercicioRepo,
-  equipamientoRepo,
-  aiService,
-);
+  const supabaseKey = process.env.SUPABASE_API_KEY;
+  const supabaseUrl = process.env.SUPABASE_URL;
+
+  if (!supabaseKey || !supabaseUrl) {
+    throw new Error(
+      "Server configuration error: Missing Supabase credentials in environment",
+    );
+  }
+
+  const supabase = createSupabaseClient({ supabaseUrl, supabaseKey });
+
+  _ejercicioRepo = new EjercicioRepository(supabase);
+  _equipamientoRepo = new EquipamientoRepository(supabase);
+  _rutinaRepo = new RutinaRepository(supabase);
+
+  _obtenerEjerciciosUseCase = new ObtenerEjerciciosUseCase(_ejercicioRepo);
+
+  const aiService = {
+    generateRoutine: (
+      candidatos: Record<string, any[]>,
+      level: string,
+      goal: string,
+    ) => generateDeepSeekRoutine(candidatos, level, goal),
+  };
+
+  _crearRutinaUseCase = new CrearRutinaUseCase(
+    _rutinaRepo,
+    _ejercicioRepo,
+    _equipamientoRepo,
+    aiService,
+  );
+
+  return {
+    obtenerEjerciciosUseCase: _obtenerEjerciciosUseCase,
+    crearRutinaUseCase: _crearRutinaUseCase,
+    equipamientoRepo: _equipamientoRepo,
+  };
+}
 
 export const EjerciciosController = {
   /**
@@ -34,6 +68,7 @@ export const EjerciciosController = {
    */
   async getAll(req: Request, res: Response) {
     try {
+      const { obtenerEjerciciosUseCase } = getDependencies();
       const { muscle, difficulty } = req.query;
       const exercises = await obtenerEjerciciosUseCase.ejecutar({
         muscle: muscle as string | undefined,
@@ -51,6 +86,7 @@ export const EjerciciosController = {
    */
   async getById(req: Request, res: Response) {
     try {
+      const { obtenerEjerciciosUseCase } = getDependencies();
       const id = parseInt(req.params.id);
       const exercise = await obtenerEjerciciosUseCase.ejecutarPorId(id);
       if (!exercise) {
@@ -68,6 +104,7 @@ export const EjerciciosController = {
    */
   async getAllEquipment(req: Request, res: Response) {
     try {
+      const { equipamientoRepo } = getDependencies();
       const equipment = await equipamientoRepo.obtenerCatalogo();
       if (!equipment) {
         return res.status(404).json({ error: "Equipment not found" });
@@ -84,6 +121,7 @@ export const EjerciciosController = {
    */
   async crearRutina(req: Request, res: Response) {
     try {
+      const { crearRutinaUseCase } = getDependencies();
       const { goal, muscles, level, userId, espacioId, routineName } = req.body;
 
       if (

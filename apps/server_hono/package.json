@@ -1,0 +1,21 @@
+{
+  "name": "server_hono",
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy --minify",
+    "cf-typegen": "wrangler types --env-interface CloudflareBindings",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate:local": "wrangler d1 migrations apply exersai-db --local",
+    "db:migrate:remote": "wrangler d1 migrations apply exersai-db --remote"
+  },
+  "dependencies": {
+    "hono": "^4.12.3",
+    "@exersai/shared": "*"
+  },
+  "devDependencies": {
+    "wrangler": "^4.4.0",
+    "drizzle-kit": "^0.31.0",
+    "@cloudflare/workers-types": "^4.20250224.0"
+  }
+}

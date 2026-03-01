@@ -1,10 +1,6 @@
 import { Request, Response, NextFunction } from "express";
-import { supabase } from "../db/supabase.js";
+import { createSupabaseClient } from "@exersai/shared/db/supabase.js";
 
-/**
- * Middleware to verify authentication via Supabase JWT
- * Adds the authenticated user to req.user
- */
 export interface AuthRequest extends Request {
   user?: {
     id: string;
@@ -19,6 +15,17 @@ export const authMiddleware = async (
   next: NextFunction,
 ) => {
   try {
+    const supabaseKey = process.env.SUPABASE_API_KEY;
+    const supabaseUrl = process.env.SUPABASE_URL;
+
+    if (!supabaseKey || !supabaseUrl) {
+      return res.status(500).json({
+        error: "Server configuration error",
+      });
+    }
+
+    const supabase = createSupabaseClient({ supabaseUrl, supabaseKey });
+
     // Get authorization header
     const authHeader = req.headers.authorization;
 
@@ -70,6 +77,17 @@ export const optionalAuthMiddleware = async (
   next: NextFunction,
 ) => {
   try {
+    const supabaseKey = process.env.SUPABASE_API_KEY;
+    const supabaseUrl = process.env.SUPABASE_URL;
+
+    if (!supabaseKey || !supabaseUrl) {
+      return res.status(500).json({
+        error: "Server configuration error",
+      });
+    }
+
+    const supabase = createSupabaseClient({ supabaseUrl, supabaseKey });
+
     const authHeader = req.headers.authorization;
 
     // If no auth header, continue without user

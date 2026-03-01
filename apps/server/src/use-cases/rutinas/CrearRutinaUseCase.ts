@@ -8,7 +8,6 @@ import type {
   CrearRutinaResult,
   Ejercicio,
 } from "../../domain/types.js";
-import { cleanExerciseData } from "../../services/helpers/cleanExerciseData.js";
 
 // Tipo del AI service — acepta Gemini o DeepSeek
 interface AIRoutineService {
@@ -71,18 +70,9 @@ export class CrearRutinaUseCase {
       );
     }
 
-    // 4. Minimizar datos para el prompt de IA
-    const optimizedCandidatos = Object.entries(candidatos).reduce(
-      (acc, [group, exercises]) => {
-        acc[group] = cleanExerciseData(exercises);
-        return acc;
-      },
-      {} as Record<string, any[]>,
-    );
-
-    // 5. Generar rutina con IA
+    // 4. Generar rutina con IA
     const routine = await this.aiService.generateRoutine(
-      optimizedCandidatos,
+      candidatos,
       level,
       goal,
     );

@@ -5,15 +5,27 @@
   "private": true,
   "workspaces": [
     "apps/server",
-    "apps/exersAI",
+    "apps/server_hono",
+    "apps/exersai",
+    "apps/admin-web",
+    "apps/train-web",
     "packages/*"
   ],
   "scripts": {
-    "dev:server": "npm run dev --workspace=apps/server",
-    "dev:app": "npx react-native run-android --root apps/exersAI",
+    "dev:server": "npm run dev --workspace=apps/server_hono",
+    "dev:web": "npm run dev --workspace=admin-web",
+    "dev:app": "npx react-native run-android --root apps/exersai",
+    "db:generate": "npm run db:generate --workspace=admin-web",
+    "db:migrate:local": "npm run db:migrate:local --workspace=admin-web",
+    "db:migrate:remote": "npm run db:migrate:remote --workspace=admin-web",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "@supabase/supabase-js": "^2.97.0",
+    "openai": "^6.22.0"
+  }
 }

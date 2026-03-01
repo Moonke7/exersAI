@@ -1,13 +1,19 @@
-import { supabase } from "../db/supabase.js";
 import type { Ejercicio } from "../domain/types.js";
 import type { IEjercicioRepository } from "../domain/repositories.js";
+import { SupabaseClient } from "@supabase/supabase-js";
 
 export class EjercicioRepository implements IEjercicioRepository {
+  private supabase: SupabaseClient;
+
+  constructor(supabase: SupabaseClient) {
+    this.supabase = supabase;
+  }
+
   async obtenerTodos(filtros?: {
     muscle?: string;
     difficulty?: string;
   }): Promise<Ejercicio[]> {
-    let query = supabase.from("ejercicios").select("*");
+    let query = this.supabase.from("ejercicios").select("*");
 
     if (filtros?.muscle) {
       query = query.contains("grupos_musculares", [filtros.muscle]);
@@ -22,7 +28,7 @@ export class EjercicioRepository implements IEjercicioRepository {
   }
 
   async obtenerPorId(id: number): Promise<Ejercicio | null> {
-    const { data, error } = await supabase
+    const { data, error } = await this.supabase
       .from("ejercicios")
       .select("*")
       .eq("id", id)
@@ -33,7 +39,7 @@ export class EjercicioRepository implements IEjercicioRepository {
   }
 
   async obtenerPorMusculo(musculo: string): Promise<Ejercicio[]> {
-    const { data, error } = await supabase
+    const { data, error } = await this.supabase
       .from("ejercicios")
       .select("*")
       .contains("grupos_musculares", [musculo]);

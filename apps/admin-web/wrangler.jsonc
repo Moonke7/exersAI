@@ -1,0 +1,35 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "exesai-admin",
+  "compatibility_date": "2026-02-22",
+  "compatibility_flags": ["nodejs_compat"],
+  "main": "./dist/_worker.js",
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS"
+  },
+  "d1_databases": [
+    {
+      "binding": "exesai_db",
+      "database_name": "exesai-db",
+      "database_id": "6fca258f-58d5-4a9b-b744-a87630defcf7"
+    }
+  ],
+  "secrets_store_secrets": [
+    {
+      "binding": "DEEPSEEK_API_KEY",
+      "store_id": "9928b811b15f4732b0eb91a5ded9cccc",
+      "secret_name": "DEEPSEEK_API_KEY"
+    },
+    {
+      "binding": "SUPABASE_KEY",
+      "store_id": "9928b811b15f4732b0eb91a5ded9cccc",
+      "secret_name": "SUPABASE_KEY"
+    },
+    {
+      "binding": "SUPABASE_URL",
+      "store_id": "9928b811b15f4732b0eb91a5ded9cccc",
+      "secret_name": "SUPABASE_URL"
+    }
+  ]
+}

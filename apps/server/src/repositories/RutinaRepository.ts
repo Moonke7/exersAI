@@ -1,18 +1,24 @@
-import { supabase } from "../db/supabase.js";
 import type {
   Rutina,
   RutinaConEjercicios,
   RutinaEjercicio,
 } from "../domain/types.js";
 import type { IRutinaRepository } from "../domain/repositories.js";
+import { SupabaseClient } from "@supabase/supabase-js";
 
 export class RutinaRepository implements IRutinaRepository {
+  private readonly supabase;
+
+  constructor(supabaseClient: SupabaseClient) {
+    this.supabase = supabaseClient;
+  }
+
   async crear(data: {
     usuario_id: string;
     nombre: string;
     objetivo?: string;
   }): Promise<Rutina> {
-    const { data: rutina, error } = await supabase
+    const { data: rutina, error } = await this.supabase
       .from("rutinas")
       .insert({
         usuario_id: data.usuario_id,
@@ -27,7 +33,7 @@ export class RutinaRepository implements IRutinaRepository {
   }
 
   async obtenerPorId(id: number): Promise<RutinaConEjercicios | null> {
-    const { data, error } = await supabase
+    const { data, error } = await this.supabase
       .from("rutinas")
       .select(
         `
@@ -46,7 +52,7 @@ export class RutinaRepository implements IRutinaRepository {
   }
 
   async obtenerBiblioteca(userId: string): Promise<RutinaConEjercicios[]> {
-    const { data, error } = await supabase
+    const { data, error } = await this.supabase
       .from("rutinas")
       .select(
         `
@@ -68,7 +74,7 @@ export class RutinaRepository implements IRutinaRepository {
     id: number,
     data: { nombre: string; objetivo?: string },
   ): Promise<Rutina> {
-    const { data: updated, error } = await supabase
+    const { data: updated, error } = await this.supabase
       .from("rutinas")
       .update({
         nombre: data.nombre,
@@ -85,28 +91,28 @@ export class RutinaRepository implements IRutinaRepository {
 
   async eliminar(id: number): Promise<void> {
     // 1. Eliminar ejercicios de la rutina
-    const { error: ejerciciosError } = await supabase
+    const { error: ejerciciosError } = await this.supabase
       .from("rutina_ejercicios")
       .delete()
       .eq("rutina_id", id);
     if (ejerciciosError) throw ejerciciosError;
 
     // 2. Eliminar de la agenda
-    const { error: agendaError } = await supabase
+    const { error: agendaError } = await this.supabase
       .from("agenda_semanal")
       .delete()
       .eq("rutina_id", id);
     if (agendaError) throw agendaError;
 
     // 3. Eliminar la rutina
-    const { error } = await supabase.from("rutinas").delete().eq("id", id);
+    const { error } = await this.supabase.from("rutinas").delete().eq("id", id);
     if (error) throw error;
   }
 
   async agregarEjercicios(
     ejercicios: Omit<RutinaEjercicio, "id" | "ejercicio">[],
   ): Promise<RutinaEjercicio[]> {
-    const { data, error } = await supabase
+    const { data, error } = await this.supabase
       .from("rutina_ejercicios")
       .insert(ejercicios)
       .select();
@@ -129,7 +135,7 @@ export class RutinaRepository implements IRutinaRepository {
       >
     >,
   ): Promise<RutinaEjercicio> {
-    const { data: updated, error } = await supabase
+    const { data: updated, error } = await this.supabase
       .from("rutina_ejercicios")
       .update(data)
       .eq("rutina_id", rutinaId)
@@ -145,7 +151,7 @@ export class RutinaRepository implements IRutinaRepository {
     rutinaId: number,
     ejercicioId: number,
   ): Promise<void> {
-    const { error } = await supabase
+    const { error } = await this.supabase
       .from("rutina_ejercicios")
       .delete()
       .eq("rutina_id", rutinaId)

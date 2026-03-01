@@ -1,13 +1,19 @@
-import { supabase } from "../db/supabase.js";
 import type {
   CatalogoEquipamiento,
   InventarioUsuario,
 } from "../domain/types.js";
 import type { IEquipamientoRepository } from "../domain/repositories.js";
+import { SupabaseClient } from "@supabase/supabase-js";
 
 export class EquipamientoRepository implements IEquipamientoRepository {
+  private readonly supabase;
+
+  constructor(supabaseClient: SupabaseClient) {
+    this.supabase = supabaseClient;
+  }
+
   async obtenerCatalogo(): Promise<CatalogoEquipamiento[]> {
-    const { data, error } = await supabase
+    const { data, error } = await this.supabase
       .from("catalogo_equipamiento")
       .select("*");
     if (error) throw error;
@@ -18,7 +24,7 @@ export class EquipamientoRepository implements IEquipamientoRepository {
     userId: string,
     espacioId: number,
   ): Promise<InventarioUsuario[]> {
-    const { data, error } = await supabase
+    const { data, error } = await this.supabase
       .from("inventario_usuario")
       .select(
         `
@@ -43,7 +49,7 @@ export class EquipamientoRepository implements IEquipamientoRepository {
     espacio_id: number;
     usuario_id: string;
   }): Promise<InventarioUsuario> {
-    const { data: created, error } = await supabase
+    const { data: created, error } = await this.supabase
       .from("inventario_usuario")
       .insert(data)
       .select()
@@ -58,7 +64,7 @@ export class EquipamientoRepository implements IEquipamientoRepository {
     userId: string,
     data: { equipo_id?: number; cantidad?: number },
   ): Promise<InventarioUsuario> {
-    const { data: updated, error } = await supabase
+    const { data: updated, error } = await this.supabase
       .from("inventario_usuario")
       .update(data)
       .eq("id", id)
@@ -71,7 +77,7 @@ export class EquipamientoRepository implements IEquipamientoRepository {
   }
 
   async eliminar(id: number, userId: string): Promise<void> {
-    const { error } = await supabase
+    const { error } = await this.supabase
       .from("inventario_usuario")
       .delete()
       .eq("id", id)

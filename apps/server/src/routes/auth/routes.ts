@@ -1,5 +1,5 @@
 import { Router, Request, Response } from "express";
-import { supabase } from "../../db/supabase.js";
+import { supabase } from "@exersai/shared/db";
 
 const router = Router();
 
