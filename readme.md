@@ -1,342 +1,98 @@
-# ExersAI - Sistema de Entrenamiento Personalizado
+# ExersAI — servidor y herramientas de administración
 
-## 📋 Especificación del Sistema
+ExersAI busca ayudar a las personas a seguir un entrenamiento que se ajuste a sus objetivos y a los recursos que tienen disponibles. Este repositorio contiene componentes del **lado servidor** del proyecto y herramientas web internas; **no contiene la aplicación móvil**.
 
-ExersAI es una aplicación de entrenamiento personalizado que adapta las rutinas de ejercicio a las necesidades y recursos de cada usuario. El sistema considera tres factores principales:
+La app para usuarios está desarrollada con **React Native** y vive en un repositorio separado. Este proyecto proporciona servicios y herramientas que forman parte del ecosistema ExersAI; no incluye el código de esa app.
 
-1. **Equipamiento disponible**: El usuario puede entrenar en diferentes espacios (gimnasio, casa, parque, hotel) y el sistema adapta los ejercicios según el equipamiento que tenga disponible en cada lugar.
+## Problema y objetivo
 
-2. **Nivel del usuario**: La aplicación ajusta la intensidad y complejidad de los ejercicios según la experiencia y capacidad física del usuario.
+Las recomendaciones de entrenamiento no siempre consideran las diferencias entre personas, sus objetivos y el equipamiento al que tienen acceso. Eso puede dificultar encontrar ejercicios que sean prácticos para cada situación.
 
-3. **Objetivo personal**: El sistema personaliza las rutinas según la meta del usuario:
-   - **Hipertrofia**: Crecimiento muscular
-   - **Fuerza**: Aumento de la fuerza máxima
-   - **Resistencia**: Mejora de la capacidad cardiovascular y resistencia muscular
+El objetivo de ExersAI es facilitar la gestión de ejercicios y la generación de rutinas personalizadas, tomando en cuenta factores como el objetivo de entrenamiento, el nivel y el equipamiento disponible. Este repositorio desarrolla parte de la infraestructura de servicios y permite administrar y probar datos relacionados con el producto móvil.
 
-### Estado Actual
+## Estado del proyecto
 
-✅ **Implementado**:
+El repositorio está en desarrollo. El código incluye una API para operaciones de usuarios, ejercicios, rutinas, espacios y equipamiento, así como un panel web de administración para gestionar y revisar datos relacionados con ejercicios y rutinas.
 
-- Base de datos completa con estructura relacional
-- Catálogo de ejercicios y equipamiento
-- Sistema de inventario personalizado por usuario y espacio (usando gemini)
-- Gestión de grupos musculares
+### Incluido en este repositorio
 
-### 🚀 Planes Futuros
+- API Hono preparada para ejecutarse en Cloudflare Workers.
+- Acceso a datos mediante Cloudflare D1 y Drizzle ORM.
+- Autenticación y operaciones de gestión de rutinas, agenda semanal, espacios y equipamiento.
+- Generación de rutinas asistida por IA mediante DeepSeek.
+- Panel web de administración hecho con Astro y React para trabajar con catálogos, perfiles de entrenamiento, sugerencias y pruebas de generación.
+- Una implementación adicional de servidor Express con Supabase en `apps/server`.
 
-- **Splits de ejercicio predeterminados**: Plantillas de rutinas probadas (Push/Pull/Legs, Upper/Lower, Full Body, etc.)
-- **Modo de entrenamiento en vivo**:
-  - Contador de tiempo por ejercicio
-  - Temporizador de descanso entre series
-  - Seguimiento del progreso en tiempo real
-- **Módulo de nutrición**:
-  - Recetas saludables personalizadas
-  - Planes de alimentación basados en objetivos
-  - Contador de calorías y macronutrientes
-- **Guía de forma con IA**:
-  - Análisis con cámara para verificar la ejecución correcta
-  - Feedback en tiempo real sobre la postura
-  - Especialmente útil para ejercicios en casa
-- **Red de Gimnasios Asociados** _(Marketing Strategy)_:
-  - Alianzas con gimnasios locales para promoción cruzada
-  - Gimnasios publican nuestra app a sus miembros
-  - A cambio, ExersAI promociona dichos gimnasios en la app
-  - Usuarios pueden seleccionar gimnasios asociados desde un mapa interactivo
-  - Al seleccionar un gimnasio asociado, todo su equipamiento se carga automáticamente
-  - Beneficio mutuo: gimnasios obtienen visibilidad, usuarios obtienen configuración instantánea
+El comando raíz `npm run dev:server` inicia `apps/server_hono`; esa es la ruta de desarrollo configurada como servidor principal desde el `package.json` raíz. La implementación Express también está en el repositorio, por lo que conviene tener presente que existen dos backends con tecnologías y configuraciones diferentes.
 
----
+### Fuera del alcance de este repositorio
 
-## 🗄️ Esquema de Base de Datos
+- La aplicación móvil React Native, que se mantiene en otro repositorio.
+- Funcionalidades que no están implementadas aquí, como seguimiento de entrenamientos en vivo, nutrición o análisis de postura con cámara.
+- La operación o el despliegue de producción: la presencia de código de despliegue no implica que el servicio esté publicado o listo para producción.
 
-La base de datos está organizada en dos grupos principales: **Tablas Maestras** (catálogos públicos) y **Tablas de Usuario** (datos personalizados).
+No hay una suite de pruebas automatizadas configurada en el script raíz de `npm test` actualmente.
 
-### 1️⃣ Tablas Maestras (Catálogos Públicos)
+## Componentes y tecnologías
 
-#### Tabla: `espacios`
+| Componente | Ubicación | Tecnologías principales |
+| --- | --- | --- |
+| API principal | `apps/server_hono` | Hono, TypeScript, Cloudflare Workers, D1, Drizzle ORM |
+| Panel de administración | `apps/admin-web` | Astro, React, TypeScript, Cloudflare |
+| Backend alternativo/adicional | `apps/server` | Express, TypeScript, Supabase |
+| Código y servicios compartidos | `packages/shared` | Esquemas de base de datos y servicios compartidos |
 
-Define los tipos de lugares donde se puede entrenar.
+## Requisitos
 
-| Columna  | Tipo          | Descripción                                               |
-| -------- | ------------- | --------------------------------------------------------- |
-| `id`     | Número (auto) | Identificador único                                       |
-| `nombre` | Texto         | Nombre del espacio (Ej: 'Gym', 'Casa', 'Parque', 'Hotel') |
+- Node.js y npm.
+- Para ejecutar la API localmente, Wrangler y la configuración de Cloudflare definida en `apps/server_hono/wrangler.jsonc`.
+- Para generar rutinas con IA, acceso y configuración de la credencial de DeepSeek usada por el Worker.
 
-**Ejemplos de datos**:
+## Desarrollo local
 
-- Gym
-- Casa
-- Parque_calistenia
+Instala las dependencias desde la raíz del repositorio:
 
----
-
-#### Tabla: `catalogo_equipamiento`
-
-Biblioteca completa de todo el equipamiento disponible (independiente del usuario).
-
-| Columna             | Tipo            | Descripción                                            |
-| ------------------- | --------------- | ------------------------------------------------------ |
-| `id`                | Número (auto)   | Identificador único                                    |
-| `nombre`            | Texto           | Nombre del equipo (Ej: 'Mancuernas', 'Barra Olímpica') |
-| `imagen_url`        | Texto           | URL de la imagen del equipo                            |
-| `grupos_musculares` | Lista de textos | Músculos que trabaja este equipo                       |
-| `es_peso_corporal`  | Verdadero/Falso | Indica si no requiere equipamiento externo             |
-| `created_at`        | Fecha y hora    | Fecha de registro                                      |
-
-**Ejemplos de datos**:
-
-- Mancuernas
-- Barra Olímpica
-- Máquina de Press de Pecho
-- Bandas de Resistencia
-- Peso Corporal
-
----
-
-#### Tabla: `ejercicios`
-
-Catálogo de todos los ejercicios disponibles en la aplicación.
-
-| Columna                     | Tipo            | Descripción                          |
-| --------------------------- | --------------- | ------------------------------------ |
-| `id`                        | Número (auto)   | Identificador único                  |
-| `nombre`                    | Texto           | Nombre del ejercicio                 |
-| `equipamiento_necesario_id` | Número          | Referencia al equipamiento requerido |
-| `grupos_musculares`         | Lista de textos | Músculos que se trabajan             |
-| `instrucciones`             | Texto           | Descripción paso a paso              |
-| `video_url`                 | Texto           | URL del video tutorial               |
-| `created_at`                | Fecha y hora    | Fecha de registro                    |
-
-**Ejemplos de datos**:
-
-- Press de Banca (requiere Barra Olímpica, trabaja Pecho/Tríceps/Hombros)
-- Flexiones (peso corporal, trabaja Pecho/Tríceps)
-- Sentadillas con Mancuernas (requiere Mancuernas, trabaja Piernas/Glúteos)
-
----
-
-#### Tabla: `gimnasios_asociados`
-
-Gimnasios registrados en la plataforma con su equipamiento completo (para alianzas de marketing).
-
-| Columna      | Tipo            | Descripción                                 |
-| ------------ | --------------- | ------------------------------------------- |
-| `id`         | Número (auto)   | Identificador único                         |
-| `nombre`     | Texto           | Nombre del gimnasio (Ej: 'PowerGym Centro') |
-| `direccion`  | Texto           | Dirección física del gimnasio               |
-| `latitud`    | Decimal         | Coordenada de latitud para mostrar en mapa  |
-| `longitud`   | Decimal         | Coordenada de longitud para mostrar en mapa |
-| `telefono`   | Texto           | Teléfono de contacto                        |
-| `logo_url`   | Texto           | URL del logo del gimnasio                   |
-| `horarios`   | Texto           | Horarios de apertura                        |
-| `sitio_web`  | Texto           | URL del sitio web del gimnasio              |
-| `activo`     | Verdadero/Falso | Indica si la asociación está activa         |
-| `created_at` | Fecha y hora    | Fecha de registro en la plataforma          |
-
-**Uso en Marketing**:
-
-- Estos gimnasios aparecen en un mapa interactivo cuando el usuario selecciona "Gym" como espacio
-- Al seleccionar un gimnasio del mapa, su equipamiento se carga automáticamente
-- Es una relación win-win: el gimnasio gana visibilidad, el usuario gana conveniencia
-
----
-
-#### Tabla: `gimnasio_equipamiento`
-
-Relación entre gimnasios asociados y su equipamiento disponible.
-
-| Columna       | Tipo          | Descripción                              |
-| ------------- | ------------- | ---------------------------------------- |
-| `id`          | Número (auto) | Identificador único                      |
-| `gimnasio_id` | Número        | Referencia al gimnasio asociado          |
-| `equipo_id`   | Número        | Referencia al equipamiento del catálogo  |
-| `cantidad`    | Número        | Cantidad de unidades disponibles         |
-| `observacion` | Texto         | Notas adicionales (Ej: 'Solo en piso 2') |
-
-**Ejemplo de uso**:
-
-- Gimnasio "PowerGym Centro" tiene 20 Mancuernas, 5 Barras Olímpicas, 10 Máquinas de Press
-- Cuando un usuario selecciona este gimnasio, todo este equipamiento se asocia automáticamente a su inventario
-
----
-
-### 2️⃣ Tablas de Usuario (Datos Personalizados)
-
-#### Tabla: `usuarios`
-
-Información básica de cada usuario registrado.
-
-| Columna      | Tipo         | Descripción                                                    |
-| ------------ | ------------ | -------------------------------------------------------------- |
-| `id`         | UUID         | Identificador único del usuario                                |
-| `username`   | Texto        | Nombre de usuario                                              |
-| `correo`     | Texto        | Correo electrónico                                             |
-| `meta`       | Texto        | Objetivo del usuario ('hipertrofia', 'fuerza' o 'resistencia') |
-| `created_at` | Fecha y hora | Fecha de registro                                              |
-
----
-
-#### Tabla: `inventario_usuario`
-
-Equipamiento que cada usuario tiene disponible en cada espacio.
-
-| Columna                  | Tipo          | Descripción                             |
-| ------------------------ | ------------- | --------------------------------------- |
-| `id`                     | Número (auto) | Identificador único                     |
-| `usuario_id`             | UUID          | Referencia al usuario                   |
-| `espacio_id`             | Número        | Referencia al espacio (Casa, Gym, etc.) |
-| `equipo_id`              | Número        | Referencia al equipamiento del catálogo |
-| `cantidad`               | Número        | Cantidad de unidades disponibles        |
-| `peso_maximo_disponible` | Texto         | Peso máximo (Ej: '20kg')                |
-
-**Ejemplo de uso**:
-
-- Usuario "Juan" tiene 2 Mancuernas en Casa con peso máximo de 15kg
-- Usuario "Juan" tiene acceso a Barra Olímpica en Gym con peso máximo de 100kg
-
----
-
-#### Tabla: `planes_semanales`
-
-Planes de entrenamiento organizados por día de la semana.
-
-| Columna      | Tipo          | Descripción                               |
-| ------------ | ------------- | ----------------------------------------- |
-| `id`         | Número (auto) | Identificador único                       |
-| `usuario_id` | UUID          | Referencia al usuario                     |
-| `nombre`     | Texto         | Nombre del plan (Ej: 'Rutina Upper Body') |
-| `dia_semana` | Número        | Día de la semana (1=Lunes, 7=Domingo)     |
-| `created_at` | Fecha y hora  | Fecha de creación                         |
-
----
-
-#### Tabla: `plan_ejercicios`
-
-Contenido detallado de cada plan: qué ejercicios hacer y cómo.
-
-| Columna              | Tipo          | Descripción                               |
-| -------------------- | ------------- | ----------------------------------------- |
-| `id`                 | Número (auto) | Identificador único                       |
-| `plan_id`            | Número        | Referencia al plan semanal                |
-| `ejercicio_id`       | Número        | Referencia al ejercicio                   |
-| `orden`              | Número        | Orden de ejecución en la rutina           |
-| `series`             | Número        | Cantidad de series a realizar             |
-| `repeticiones`       | Texto         | Rango de repeticiones (Ej: '8-12')        |
-| `peso_sugerido`      | Texto         | Peso recomendado (Ej: '10kg')             |
-| `notas_analisis_llm` | Texto         | Notas generadas por IA sobre el ejercicio |
-
----
-
-## 🔄 Flujo del Sistema
-
-```mermaid
-graph TD
-    A[Usuario se registra] --> B[Usuario define su objetivo]
-    B --> C{¿Dónde va a entrenar?}
-    C --> D[Selecciona espacio: Casa/Gym/Parque]
-    D --> E{Seleccionó Gym?}
-
-    E -->|Sí| F{¿Gimnasio asociado?}
-    E -->|No| G[Registra equipamiento manualmente]
-
-    F -->|Sí| H[Ver mapa de gimnasios]
-    F -->|No| G
-
-    H --> I[Selecciona gimnasio del mapa]
-    I --> J[Equipamiento se carga automáticamente]
-
-    J --> K[Sistema genera rutina personalizada]
-    G --> K
-
-    K --> L{Considera 3 factores}
-
-    L --> M[Equipamiento disponible del usuario]
-    L --> N[Objetivo seleccionado]
-    L --> O[Nivel del usuario]
-
-    M --> P[Filtra ejercicios posibles]
-    N --> P
-    O --> P
-
-    P --> Q[Crea plan semanal optimizado]
-    Q --> R[Asigna ejercicios por día]
-    R --> S[Define series, repeticiones y peso]
-
-    S --> T[Usuario visualiza su rutina]
-    T --> U{Usuario inicia entrenamiento}
-
-    U --> V[Ejecuta ejercicio con timer]
-    V --> W[Temporizador de descanso]
-    W --> X{¿Hay más ejercicios?}
-
-    X -->|Sí| V
-    X -->|No| Y[Finaliza entrenamiento del día]
-
-    Y --> Z[Registra progreso]
-    Z --> AA{¿Usuario quiere actualizar?}
-
-    AA -->|Cambiar equipamiento| G
-    AA -->|Cambiar gimnasio| H
-    AA -->|Cambiar objetivo| B
-    AA -->|Nueva rutina| K
-    AA -->|Continuar| T
-
-    style A fill:#e1f5ff
-    style H fill:#ffd700
-    style I fill:#ffd700
-    style J fill:#90ee90
-    style K fill:#fff4e1
-    style P fill:#ffe1e1
-    style T fill:#e1ffe1
-    style Y fill:#f0e1ff
+```bash
+npm install
 ```
 
-### Descripción del Flujo
+Inicia la API Hono:
 
-1. **Registro e Inicio**: El usuario se registra y define su objetivo principal (hipertrofia, fuerza o resistencia).
+```bash
+npm run dev:server
+```
 
-2. **Selección de Espacio**: El usuario elige dónde va a entrenar (Casa, Gym, Parque).
+Inicia el panel de administración en modo desarrollo:
 
-3. **Configuración de Equipamiento**:
-   - **Opción A - Gimnasio Asociado** _(Plan futuro)_:
-     - El usuario ve un mapa con gimnasios asociados cercanos
-     - Al seleccionar uno, todo el equipamiento se carga automáticamente
-     - Ahorro de tiempo en configuración
-   - **Opción B - Manual**:
-     - El usuario registra manualmente su equipamiento disponible
+```bash
+npm run dev --workspace=admin-web
+```
 
-4. **Generación de Rutina Inteligente**:
-   - El sistema analiza el equipamiento disponible del usuario
-   - Considera el objetivo seleccionado
-   - Evalúa el nivel del usuario
-   - Filtra ejercicios que sean realizables con el equipo disponible
-   - Crea un plan semanal optimizado
+Astro sirve el panel normalmente en `http://localhost:4321`.
 
-5. **Asignación de Ejercicios**: El sistema distribuye los ejercicios a lo largo de la semana, asignando series, repeticiones y peso sugerido para cada uno.
+Para aplicar las migraciones de D1 localmente:
 
-6. **Ejecución del Entrenamiento** _(Funcionalidad futura)_:
-   - El usuario inicia la sesión
-   - Sigue cada ejercicio con temporizador
-   - Descansa entre series con contador regresivo
-   - Completa la rutina del día
+```bash
+npm run db:migrate:local
+```
 
-7. **Seguimiento y Ajustes**: El usuario puede actualizar su equipamiento, cambiar de gimnasio, modificar objetivos o generar nuevas rutinas según evolucione su progreso.
+Los comandos disponibles y los bindings de Cloudflare se definen en `package.json` y `apps/server_hono/wrangler.jsonc`. La generación de rutinas requiere que la credencial de DeepSeek esté disponible para el entorno de ejecución.
 
----
+> **Nota sobre la instalación:** el `package.json` raíz todavía declara los workspaces `apps/exersai` y `apps/train-web`, que no están presentes en este repositorio. Si una instalación limpia falla por esas rutas, habrá que ajustar la lista de workspaces a los paquetes disponibles aquí.
 
-## 🎯 Beneficios del Sistema
+## Estructura del repositorio
 
-- ✅ **Personalización total**: Cada rutina es única y adaptada al usuario
-- ✅ **Flexibilidad de espacio**: Entrena donde quieras con lo que tengas
-- ✅ **Progresión inteligente**: El sistema adapta las rutinas según tu avance
-- ✅ **Sin excusas**: Siempre habrá ejercicios disponibles con tu equipamiento actual
-- ✅ **Orientado a resultados**: Enfocado en alcanzar tu objetivo específico
+```text
+apps/
+├── admin-web/   # Panel web de administración y pruebas
+├── server/      # Backend Express con Supabase
+└── server_hono/ # API Hono para Cloudflare Workers
+packages/
+└── shared/      # Esquemas, tipos y servicios compartidos
+```
 
----
+## Próximos pasos técnicos
 
-## 📱 Tecnologías Utilizadas
-
-- **Base de datos**: PostgreSQL con Supabase
-- **Backend**: Node.js + Express + TypeScript
-- **Frontend**: React Native + TypeScript
-- **IA**: Análisis y recomendaciones inteligentes de rutinas
+- Mantener documentada la integración entre la API de este repositorio y la app móvil del repositorio separado.
+- Definir cuál backend será la implementación mantenida a largo plazo y documentar su configuración de manera completa.
+- Añadir pruebas automatizadas para las funcionalidades principales.
