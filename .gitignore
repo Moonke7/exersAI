@@ -1,8 +1,24 @@
 node_modules/
-.env
-.env.local
-.env.*.local
+.env*
+!.env.example
+!.env.*.example
+.dev.vars
+.dev.vars.*
+.wrangler/
 dist/
 build/
 *.log
 .DS_Store
+
+# Local databases and production exports
+*.sqlite
+*.sqlite3
+*.db
+/prod.sql
+
+# Local signing credentials
+**/debug.keystore
+*.jks
+*.keystore
+*.p12
+*.pfx
